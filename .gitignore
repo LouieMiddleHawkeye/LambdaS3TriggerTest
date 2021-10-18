@@ -1,0 +1,5 @@
+/outputFile.txt
+/HelloWorldFunction/build/
+/HelloWorldFunction/.gradle/
+/.idea/
+/.aws-sam/
