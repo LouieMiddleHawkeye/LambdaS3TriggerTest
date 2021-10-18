@@ -1,4 +1,4 @@
-#LambdaS3TriggerTest
+# LambdaS3TriggerTest
 
 ## Note
 
@@ -10,6 +10,7 @@ Make sure you have an input bucket _and_ an output bucket as otherwise your outp
 
 ## IAM
 The policies and roles I made can be seen on AWS  (pretty basic, just s3 read write). I also had to give my IAM user lambda permissions to create functions and test them.
+I currently have CloudWatch enabled, so I can see logs, but will want to change to datadog I assume if used in prod. 
 
 ## Building 
 
@@ -32,6 +33,12 @@ You can get current policies like so `aws lambda get-policy --function-name Hell
 
 Of course, you can also just add files to the s3 bucket which _should_ work.
 
+## S3 path problem
+
+Can't use regex or wildcards to try and say which prefix/suffix to trigger the function on. This is annoying. Probably easiest to change the file suffix or the files to include whether it is a summary minute or summary segment. This is quite highly coupled though. Not sure what else we could do.
+Also, anything with that suffix in the bucket would trigger the function, so would need to keep the spec up to date.
+
+The other option is to have it trigger on _every_ delete in that bucket, and then decide whether to do anything in the code. This will lead to a lot more triggers, but might be easier. Also, the amount of deletions in reality should hopefully not be that many.
 
 # LambdaS3TriggerTest
 

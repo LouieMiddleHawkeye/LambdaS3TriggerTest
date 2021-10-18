@@ -27,7 +27,7 @@
           "arn":"arn:aws:s3:::louiem-test"
         },
         "object":{
-          "key":"2021_1_2032634_1_11.football.json",
+          "key":"2021_1_2032634_1_10.football.summary.minute",
           "size":1024,
           "eTag":"d41d8cd98f00b204e9800998ecf8427e",
           "versionId":"096fKKXTRTtl3on89fVO.nfljtsv6qko"
