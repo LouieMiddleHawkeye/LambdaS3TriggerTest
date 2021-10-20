@@ -36,6 +36,7 @@ public class App implements
         String srcBucket = record.getS3().getBucket().getName();
         // Object key may have spaces or unicode non-ASCII characters.
         String srcKey = record.getS3().getObject().getUrlDecodedKey();
+        String versionId = record.getS3().getObject().getVersionId();
 
         String dstBucket = srcBucket + "-resized";
         String dstKey = "resized-" + srcKey;
@@ -51,9 +52,9 @@ public class App implements
         if (record.getEventName().equals("ObjectCreated:Put")) {
             return handleCreateFile(srcKey, srcBucket, dstKey, dstBucket);
         }
-        if (record.getEventName().equals("ObjectRemoved:Delete")) {
-            return handleDeleteFile(srcKey, srcBucket, dstKey, dstBucket);
-        }
+//        if (record.getEventName().equals("ObjectRemoved:DeleteMarkerCreated")) {
+//            return handleDeleteFile(srcKey, srcBucket, dstKey, dstBucket, versionId);
+//        }
 
         System.out.println("Error triggering on event " + record.getEventName());
 
@@ -108,52 +109,53 @@ public class App implements
         }
     }
 
-    private String handleDeleteFile(String srcKey, String srcBucket, String dstKey, String dstBucket) {
-        try {
-            // Infer the file type.
-            Matcher matcher = Pattern.compile(".*\\.([^\\.]*)").matcher(srcKey);
-            if (!matcher.matches()) {
-                System.out.println("Unable to infer type for key "
-                        + srcKey);
-                return "";
-            }
-            String type = matcher.group(1);
-            if (!SEGMENT_TYPE.equals(type)) {
-                System.out.println("Skipping non-segment " + srcKey);
-                return "";
-            }
-
-            // Download the json from S3 into a stream
-            AmazonS3 s3Client = AmazonS3ClientBuilder.defaultClient();
-            S3Object s3Object = s3Client.getObject(new GetObjectRequest(
-                    srcBucket, srcKey));
-            InputStream objectData = s3Object.getObjectContent();
-
-            // Read the source json
-            String srcJson = IOUtils.toString(objectData);
-            DocumentContext srcDocument = JsonPath.parse(srcJson, Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS));
-
-            String year = srcDocument.read("$.details.venue.name", String.class);
-
-            InputStream is = new ByteArrayInputStream(year.getBytes(StandardCharsets.UTF_8));
-            ObjectMetadata meta = new ObjectMetadata();
-            meta.setContentLength(year.getBytes(StandardCharsets.UTF_8).length);
-            meta.setContentType(TEXT_MIME);
-
-            // Uploading to S3 destination bucket
-            System.out.println("Writing to: " + dstBucket + "/" + dstKey);
-            try {
-                s3Client.putObject(dstBucket, dstKey, is, meta);
-            } catch (AmazonServiceException e) {
-                System.err.println(e.getErrorMessage());
-                System.exit(1);
-            }
-            System.out.println("Successfully resized " + srcBucket + "/"
-                    + srcKey + " and uploaded to " + dstBucket + "/" + dstKey);
-            return "Ok";
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    private String handleDeleteFile(String srcKey, String srcBucket, String dstKey, String dstBucket, String versionId) {
+//        try {
+//            AmazonS3 s3Client = AmazonS3ClientBuilder.defaultClient();
+//
+//            // Infer the file type.
+//            Matcher matcher = Pattern.compile(".*\\.([^\\.]*)").matcher(srcKey);
+//            if (!matcher.matches()) {
+//                System.out.println("Unable to infer type for key "
+//                        + srcKey);
+//                return "";
+//            }
+//            String type = matcher.group(1);
+//            if (!SEGMENT_TYPE.equals(type)) {
+//                System.out.println("Skipping non-segment " + srcKey);
+//                return "";
+//            }
+//
+//            // Download the json from S3 into a stream
+//            S3Object s3Object = s3Client.getObject(new GetObjectRequest(
+//                    srcBucket, srcKey));
+//            InputStream objectData = s3Object.getObjectContent();
+//
+//            // Read the source json
+//            String srcJson = IOUtils.toString(objectData);
+//            DocumentContext srcDocument = JsonPath.parse(srcJson, Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS));
+//
+//            String year = srcDocument.read("$.details.venue.name", String.class);
+//
+//            InputStream is = new ByteArrayInputStream(year.getBytes(StandardCharsets.UTF_8));
+//            ObjectMetadata meta = new ObjectMetadata();
+//            meta.setContentLength(year.getBytes(StandardCharsets.UTF_8).length);
+//            meta.setContentType(TEXT_MIME);
+//
+//            // Uploading to S3 destination bucket
+//            System.out.println("Writing to: " + dstBucket + "/" + dstKey);
+//            try {
+//                s3Client.putObject(dstBucket, dstKey, is, meta);
+//            } catch (AmazonServiceException e) {
+//                System.err.println(e.getErrorMessage());
+//                System.exit(1);
+//            }
+//            System.out.println("Successfully resized " + srcBucket + "/"
+//                    + srcKey + " and uploaded to " + dstBucket + "/" + dstKey);
+//            return "Ok";
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 }
 
