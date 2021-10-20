@@ -38,7 +38,7 @@ Of course, you can also just add files to the s3 bucket which _should_ work.
 Can't use regex or wildcards to try and say which prefix/suffix to trigger the function on. This is annoying. Probably easiest to change the file suffix or the files to include whether it is a summary minute or summary segment. This is quite highly coupled though. Not sure what else we could do.
 Also, anything with that suffix in the bucket would trigger the function, so would need to keep the spec up to date.
 
-The other option is to have it trigger on _every_ delete in that bucket, and then decide whether to do anything in the code. This will lead to a lot more triggers, but might be easier. Also, the amount of deletions in reality should hopefully not be that many.
+The other option is to have it trigger on _every_ addition/delete in that bucket (what I've done here), and then decide whether to do anything in the code. This will lead to a lot more triggers so might not be worth it.
 
 # LambdaS3TriggerTest
 
